@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinUni CS | Curriculum Explorer</title>
+    <link rel="icon" type="image/x-icon" href="https://icons.duckduckgo.com/ip3/vinuni.edu.vn.ico">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap');
+
+        :root {
+            /* Premium Dark Theme Variables */
+            --bg-color: #020617; /* Very dark slate */
+            --glass-bg: rgba(15, 23, 42, 0.6); /* Slate 900 with opacity */
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            
+            /* VinUni Inspired Accents */
+            --accent: #e63946; /* Elegant Crimson/Red */
+            --accent-glow: rgba(230, 57, 70, 0.3);
+            --accent-secondary: #3b82f6; /* Soft blue for contrast */
+            
+            /* Text Colors */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dark: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Sophisticated Ambient Background Blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 40vw; height: 40vw; background: #7f1d1d; } /* Deep Red */
+        .blob-2 { bottom: -10%; right: -10%; width: 35vw; height: 35vw; background: #1e3a8a; animation-delay: -5s; } /* Deep Blue */
+        .blob-3 { top: 30%; left: 30%; width: 30vw; height: 30vw; background: #0f172a; animation-duration: 15s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 40px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Header section */
+        header {
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Tabs & Search */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tab-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            border-color: var(--accent);
+            background: rgba(230, 57, 70, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.9rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        .search-box input::placeholder {
+            color: #64748b;
+        }
+
+        /* Tabs Content */
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Year & Semester Grid */
+        .year-container {
+            margin-bottom: 3.5rem;
+        }
+        
+        .year-header {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 4px solid var(--accent);
+            color: #f8fafc;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .day-card {
+            padding: 1.8rem;
+            transition: border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .day-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .day-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        /* Courses (Interactive Directory Items) */
+        .course-list {
+            list-style: none;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .course-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .course-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--accent-secondary);
+            transform: translateX(4px);
+        }
+
+        .course-label {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            width: 100%;
+        }
+
+        .course-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .course-code {
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        
+        .time-tag {
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            color: #e2e8f0;
+            white-space: nowrap;
+        }
+
+        /* Program Overview Glass Panels */
+        .info-panel {
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .info-panel h2 { color: var(--text-main); margin-bottom: 1.2rem; font-size: 1.6rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
+        .info-panel h3 { color: #fff; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .info-panel p, .info-panel li { color: var(--text-dark); line-height: 1.7; margin-bottom: 0.8rem; font-size: 1rem; }
+        .info-panel ul, .info-panel ol { margin-left: 1.5rem; }
+
+        /* Modal / Pop-up Styling */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(12px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { opacity: 1; display: flex; }
+
+        .modal-content {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            width: 90%; max-width: 700px; max-height: 85vh;
+            overflow-y: auto; padding: 2.5rem;
+            position: relative; transform: translateY(20px); transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+
+        .close-btn {
+            position: absolute; top: 1.5rem; right: 1.5rem;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-muted);
+            width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; font-size: 1.2rem; display: grid; place-items: center;
+            transition: all 0.2s;
+        }
+        .close-btn:hover { background: var(--text-main); color: #000; }
+
+        .modal-title { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; line-height: 1.3; }
+        .modal-code { color: var(--accent-secondary); font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 1.5rem; }
+        
+        .modal-tags { display: flex; gap: 0.8rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .modal-tag { padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #e2e8f0; }
+
+        .modal-section-title { font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .modal-desc { color: var(--text-dark); line-height: 1.8; font-size: 1rem; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .modal-prereq { color: var(--text-main); font-weight: 500; font-size: 1rem; margin-bottom: 1rem; }
+
+        /* Search Results Panel */
+        .search-results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .search-item { padding: 1.5rem; cursor: pointer; border-left: 4px solid transparent; transition: all 0.2s ease; }
+        .search-item:hover { border-left-color: var(--accent-secondary); background: rgba(255,255,255,0.04); transform: translateX(5px); }
+
+        /* Custom Scrollbar for Modal */
+        .modal-content::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .modal-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        @media (max-width: 768px) {
+            header { padding: 1.5rem; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .tabs { overflow-x: auto; padding-bottom: 0.5rem; }
+            .tab-btn { white-space: nowrap; }
+            .search-box { max-width: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="glass">
+            <h1>Bachelor of Science in Computer Science</h1>
+            <p class="subtitle">Curriculum Framework &middot; Cohort 2024-2028</p>
+        </header>
+
+        <!-- Navigation & Search -->
+        <div class="controls-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('flow')">Curriculum Flow</button>
+                <button class="tab-btn" onclick="switchTab('overview')">Program Overview</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for courses, codes, or keywords..." onkeyup="handleSearch()">
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Tab 1: Flow -->
+            <div id="tab-flow" class="tab-content active">
+                <div id="curriculum-container">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+
+            <!-- Tab 2: Overview -->
+            <div id="tab-overview" class="tab-content">
+                <div class="glass info-panel">
+                    <h2>Program Profile</h2>
+                    <p><strong>Name of the program degree:</strong> Bachelor of Science in Computer Science</p>
+                    <p><strong>Program duration:</strong> to be completed in 4 years on a full-time basis</p>
+                    <p><strong>Total credits:</strong></p>
+                    <ul>
+                        <li>Option 1 Single major: 120 credits</li>
+                        <li>Option 2 Major + Minor in Robotics or Product Design or Technopreneur or another minor: 135 credits</li>
+                    </ul>
+                    <p style="margin-top: 1.5rem; font-style: italic; color: var(--text-muted);">The purpose of the program is to develop computer scientists with a deep understanding of underlying computer science theoretical principles, software engineering practices and significant exposure to problem-solving, project-based, authentic and hands-on learning experience which will prepare them for work and allow them to contribute to society as creative, innovative and personally well rounded.</p>
+                </div>
+
+                <div class="glass info-panel">
+                    <h2>Program Educational Objectives</h2>
+                    <ol>
+                        <li>Apply basic knowledge of computer science principles and in-depth knowledge of specific computing topics (AI, ML, software engineering) to address technical and societal problems.</li>
+                        <li>Conceive, design, and realize useful products, systems, and services, respecting economic, environmental, cultural, life safety, and ethical constraints.</li>
+                        <li>Discover and apply new knowledge, and develop new tools for the practice of computer science.</li>
+                        <li>Be sensitive to professional and societal contexts, committed to ethical action, and engaged in life-long learning.</li>
+                        <li>Be leaders with an entrepreneurial mindset, and effective communicators in multidisciplinary teams.</li>
+                        <li>Engage with their communities, profession, the nation and the world.</li>
+                    </ol>
+                </div>
+
+                <div class="glass info-panel">
+                    <h2>Curriculum Composition (120 Credits)</h2>
+                    <ul>
+                        <li><strong>I. VINCORE (31 Credits | 25.8%)</strong>
+                            <ul>
+                                <li>Enterprise & Innovation (4 cr), Leadership Mindset (2 cr), Civic Responsibility (2 cr), Ethics (2 cr)</li>
+                                <li>Community Service (45 hrs), Working with Brain (2 cr), Working with Others (4 cr), Working with Self (90 hrs)</li>
+                                <li>Integrated Vietnam Studies (11 cr), Sustainability & Global Citizenship (2 cr), Creative Arts (2 cr)</li>
+                            </ul>
+                        </li>
+                        <br>
+                        <li><strong>II. PROFESSIONAL EDUCATION (89 Credits | 74.2%)</strong>
+                            <ul>
+                                <li>College Core Requirement (28 cr)</li>
+                                <li>Major (Discipline) Requirement (32 cr)</li>
+                                <li>Area of Concentration Elective (12 cr)</li>
+                                <li>Free Electives (7 cr)</li>
+                                <li>Science Courses (2 cr), Course-related Projects (2 cr)</li>
+                                <li>Practice/Internship (Non-credit), Graduation Thesis/Capstone (6 cr)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 3: Search Results -->
+            <div id="tab-search" class="tab-content">
+                <div class="glass info-panel">
+                    <h2>Search Results</h2>
+                    <div id="search-results-container" class="search-results">
+                        <!-- JS Injected -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Course Details -->
+    <div id="course-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal(true)">✕</button>
+            
+            <div class="modal-code" id="modal-code">COMP1010</div>
+            <div class="modal-title" id="modal-title">Introduction to Programming</div>
+            
+            <div class="modal-tags">
+                <div class="modal-tag" id="modal-credit">4 Credits</div>
+                <div class="modal-tag" id="modal-category">Major Requirement</div>
+            </div>
+            
+            <div class="modal-section-title">Pre-requisites</div>
+            <div class="modal-prereq" id="modal-prereq">None</div>
+            
+            <div class="modal-section-title">Course Description & Outcomes</div>
+            <div class="modal-desc" id="modal-desc">Description here...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- COMPLETE DATABASE FROM PDF ---
+        const courseDB = {
+            "MATH1010": { name: "Calculus I", cr: 4, type: "College Core", pre: "None", desc: "This course teaches techniques of integration, finding areas and volumes by integration, exponential growth, partial fractions, infinite sequences and series, tests of convergence, and power series." },
+            "MATH1020": { name: "Calculus II", cr: 4, type: "College Core", pre: "Calculus I", desc: "This course gives an introduction to multivariable calculus as well as to ordinary and partial differential equations. Topics include partial derivatives, double and triple integrals, line and surface integrals, vector fields, Green’s theorem, Stokes’ theorem, and the divergence theorem." },
+            "MATH2050": { name: "Linear Algebra", cr: 4, type: "College Core", pre: "None", desc: "This course teaches linear algebra and its applications. Topics include matrices, determinants, vector spaces, eigenvalues and eigenvectors, orthogonality and inner product spaces; applications include brief introductions to difference equations, Markov chains, and systems of linear ordinary differential equations." },
+            "MATH2010": { name: "Probability and Statistics", cr: 4, type: "College Core", pre: "Calculus I", desc: "This course teaches random variables, probability distributions, expectation, estimation, testing, experimental design, quality control, and regression. Other topics include density functions, multidimensional random variables, and important distributions including normal, Poisson, exponential, hypothesis testing, confidence intervals, and point estimation using maximum likelihood, the method of moments, conditional probability and Bayesian reasoning." },
+            "PHYS1010": { name: "Physics I", cr: 4, type: "College Core", pre: "Calculus I", desc: "Covers the mechanics of particles with focus on kinematics, dynamics, conservation laws, central force fields, periodic motion. Mechanics of many-particle systems: center of mass, rotational mechanics of a rigid body, rotational equilibrium, and fluid mechanics. Temperature, heat, the laws of thermodynamics." },
+            "CECS1010": { name: "Introduction to Engineering and Computer Science", cr: 4, type: "College Core", pre: "None", desc: "Provides a general introduction to the engineering design process – spanning core topics from problem definition through prototyping and testing, as well as other important considerations such as sustainability, failure analysis, and engineering economics. Emphasizes multidisciplinary design via a design project (e.g., design a line following robot)." },
+            "COMP1010": { name: "Introduction to Programming", cr: 4, type: "College Core", pre: "None", desc: "Covers programming and problem solving using Python. Emphasizes principles of software development, style, and testing. Topics include procedures and functions, iteration, recursion, arrays and vectors, strings, an operational model of procedure and function calls, algorithms, exceptions, the basics of object-oriented programming, and GUIs." },
+            
+            "COMP1020": { name: "Object-oriented Programming and Data Structures", cr: 4, type: "Major", pre: "Introduction to Programming", desc: "Covers program structure and organization, modular programming, advanced topics in object-oriented programming (abstract data types, polymorphism, interfaces, iterators), collections, basics of graphical user interfaces, recursion, data structures (lists, trees, stacks, queues, heaps, search trees, balanced trees, hash tables, graphs), and basic graph algorithms. Java is the principal programming language." },
+            "MATH2020": { name: "Discrete Mathematics", cr: 4, type: "Major", pre: "None", desc: "Covers notions, techniques and algorithms of discrete mathematics with the special emphasis on sets and proof techniques, functions and relations, number theory, combinatorics, probability, logic, the basics of graph theory and the basics of cryptography." },
+            "COMP3020": { name: "Machine Learning", cr: 4, type: "Major", pre: "Linear Algebra, Prob & Stats, OOP & Data Structures", desc: "Covers the principles and algorithms for turning training data into effective automated predictions. It covers representation, over-fitting, regularization, generalization, clustering, classification, recommender problems, probabilistic modeling, reinforcement learning; and methods such as support vector machines and neural networks/deep learning." },
+            "COMP2020": { name: "Computer Organization", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", desc: "Provides an introduction to computer organization, systems programming and the hardware/software interface. Topics include instruction sets, computer arithmetic, datapath design, data formats, addressing modes, memory hierarchies including caches and virtual memory, I/O devices, bus-based I/O systems, and multicore architectures. Students learn assembly language programming and design a pipelined RISC processor." },
+            "COMP3010": { name: "Algorithm Design", cr: 4, type: "Major", pre: "Theory of Computation", desc: "Covers four major algorithm design techniques (greedy algorithms, divide and conquer, dynamic programming, and network flow), and algorithmic techniques for intractable problems, including approximation algorithms and local search heuristics. Applications drawn from systems, networks, AI, vision, data mining, computational biology." },
+            "COMP2030": { name: "Software Construction", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", desc: "Covers abstract data types, abstractions functions, interfaces, recursion and regular expressions and grammars. Deals with parser generators, concurrency, thread safety, programming for sockets and networking, queues and message passing, multithreading, locks and synchronization, map and filter, streams. Covers testing, code review, version control, designing specifications, debugging." },
+            "COMP2040": { name: "Operating Systems", cr: 4, type: "Major", pre: "Computer Organization", desc: "Covers systems programming and introductory operating system design and implementation. Basics of operating systems, namely structure, concurrency, scheduling, synchronization, memory management, filesystems, security and networking are covered. Introduces parallel and distributed computing." },
+            "COMP2050": { name: "Artificial Intelligence", cr: 4, type: "Major", pre: "Intro to Programming; Prob & Stats", desc: "Covers symbolic and connectivist approaches to AI, state search algorithms, biologically inspired optimization, Bayesian networks, logic programming. Representing uncertainty, decision theory, planning and decision making under uncertainty. Considers ethical and societal issues related to AI." },
+            
+            "MATH4010": { name: "Advanced Probability and Statistics", cr: 3, type: "Concentration", pre: "Probability and Statistics", desc: "Teaches advanced topics in probability and statistics. Topics include random processes, convergence of random processes, Markov Chains, Bayesian statistics, nonlinear regression." },
+            "COMP3040": { name: "Computer Vision", cr: 3, type: "Concentration", pre: "Machine Learning, Linear Algebra, OOP", desc: "Compute properties of our world—the 3D shape, motion of objects, names of people or things—through analysis of digital images or videos. 3D reconstruction, image segmentation, object recognition, graph cuts, non-linear least squares, and deep learning." },
+            "COMP4020": { name: "Natural Language Processing", cr: 3, type: "Concentration", pre: "Machine Learning, OOP", desc: "Enable computers to use human languages as input, output, or both. Machine translation, automatic conversational assistants, sentiment analysis, syntactic analysis, word sense disambiguation, discourse analysis." },
+            "COMP4040": { name: "Data Mining and Big Data Analytics", cr: 3, type: "Concentration", pre: "Linear Algebra, OOP, Machine Learning", desc: "Statistical aspects of data mining, effective analysis of large datasets. Building and interpreting various statistical models. Preparing data and representing knowledge from big data analysis." },
+            "COMP3030": { name: "Databases and Database Systems", cr: 3, type: "Concentration", pre: "OOP, Algorithms and Data Structures", desc: "Introduction to relational and noSQL database systems. Relational algebra, ER model, schema design, normal forms, SQL, indexing, sorting, query optimization, transactions, concurrency control, recovery." },
+            "COMP4010": { name: "Data Visualization", cr: 3, type: "Concentration", pre: "Intro to programming, Stats & Prob, Data Mining", desc: "Techniques and algorithms for creating effective visualizations of large datasets based on graphic design, visual art, perceptual psychology. Data analysis and visualization assignments using tools like Tableau." },
+            "COMP4030": { name: "Cybersecurity", cr: 3, type: "Concentration", pre: "OOP, Discrete Math", desc: "Technical and social understanding of how and why security/privacy matter. User authentication, cryptography, malware, behavioral economics, anonymity, side channels, decoys. Real-world systems like Bitcoin, Stuxnet." },
+            "COMP4050": { name: "Cryptography", cr: 3, type: "Concentration", pre: "Theory of Computation, Linear algebra", desc: "One-way functions, encryption, digital signatures, pseudo-random number generation, zero-knowledge and basic protocols. Proofs of security based on precise definitions." },
+            "COMP3050": { name: "Networks", cr: 3, type: "Concentration", pre: "Computer Organization", desc: "Basic networking with emphasis on the Internet. Web, Email, P2P, data transmission, packet switching, LAN, routing, congestion control, network security, wireless networks (4G/5G, WiFi, Bluetooth)." },
+            
+            "ENTR1022": { name: "Agile Innovation and Entrepreneurship", cr: 2, type: "VinCore", pre: "None", desc: "1. Explain how an entrepreneurial mindset supports innovation.\n2. Evaluate entrepreneurship in Vietnam (Vingroup 6 Hóa).\n3. Recommend strategies to evaluate mindset.\n4. Grow skills in solving problems creatively.\n5. Work productively in teams during a hackathon." },
+            "IDEA1010": { name: "Big Ideas Series (X)", cr: 2, type: "VinCore", pre: "None", desc: "1. Describe and explain a 'big idea' (new solution, disrupting tech).\n2. Identify implications for everyday life.\n3. Develop strategy for using big idea.\n4. Evaluate application, positive/negative impacts." },
+            "LEAD1031": { name: "Leadership and Teambuilding Bootcamp", cr: 2, type: "VinCore", pre: "None", desc: "Basic concepts of leadership and organizational behavior. Experiential learning solving complex dynamic problems from military, government, business sectors. Land navigation, obstacle courses. Develop resilience, Self, Interpersonal, and Team Leadership." },
+            "TECH1010": { name: "Technology Ethics", cr: 2, type: "VinCore", pre: "None", desc: "Principles and values applied to technology: privacy, data protection, algorithmic fairness, bias, digital inclusion, accountability, ethical AI. Apply ethical theories to moral dilemmas involving tech." },
+            "COSL1010": { name: "Community Service Learning", cr: 0, type: "VinCore", pre: "None", desc: "45 hours required. Define service learning components. Critically reflect on social issues and UNESCO’s SDGs. Plan and implement a service project. Develop sensitivity and empathy to local communities." },
+            "THINK1010": { name: "Critical and Creative Thinking", cr: 2, type: "VinCore", pre: "None", desc: "Nature of argumentation, evaluate arguments, uncover hidden premises. Deduction, induction, arguments from inference to best explanation. Philosophical puzzles and paradoxes (Hume's problem, Sorites)." },
+            "ENGL1030": { name: "Academic and Professional Writing", cr: 2, type: "VinCore", pre: "None", desc: "Differences between academic and opinion writing. Apply in essays, quoting, paraphrasing. Clear, concise, well-structured writing skills (reports, proposals). Use AI to develop and enhance writing." },
+            "ENGL1040": { name: "Interpersonal and Multimedia Communication", cr: 2, type: "VinCore", pre: "None", desc: "Concepts of oral and visual communication. Deliver communication to different audiences. Develop digital content (presentations, pitches, blog posts, viral videos, podcasts)." },
+            "MANA1011": { name: "Introduction to Managing Skills", cr: 2, type: "VinCore", pre: "None", desc: "Apply SMART technique. Organize and prioritize tasks. Assign tasks based on team strengths. Create schedules, monitor progress, motivational techniques, provide feedback." },
+            "VCOR1012": { name: "OASIS (Orientation, Advising, Skills, Identity)", cr: 0, type: "VinCore", pre: "None", desc: "Non-credit bearing mandatory component. Cultivate a self-leadership mindset, transforming from high school students to global citizens." },
+            "VCOR1021": { name: "Healthy Lifestyle 1 & 2", cr: 0, type: "VinCore", pre: "None", desc: "Minimum 45 hours. Physical wellbeing, psychosocial, spiritual health. Practicum lessons (exercise/sport classes). Nutrition, diet, clarity of thought." },
+            
+            "HASS1010": { name: "Marxism-Leninism Political Economy (Phil, Sci & Soc)", cr: 3, type: "VinCore", pre: "None", desc: "Broad survey of key ideas in Philosophy, Epistemology, Sociology of Science. Thomas Kuhn, humanity, ethics. Delivered in English via content-based language learning." },
+            "HASS1020": { name: "Marxism-Leninism Philosophy (Global Pol. Economy)", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam’s place in the world, globalization, international integration. Case studies on ASEAN, East Asia, China. Expressions of global inequality." },
+            "HASS1030": { name: "Scientific Socialism (Politics and Social Change)", cr: 2, type: "VinCore", pre: "None", desc: "Relationship between society and politics in Vietnam and Asia (20th-21st centuries). Dynamics of politics and social change. Active learning, journal writing." },
+            "HASS1041": { name: "Ho Chi Minh Ideology", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam History since 1858. Colonization, Indochina wars, reunification, integration. Reflected through the central figure of Ho Chi Minh (1890-1969)." },
+            "HASS1050": { name: "History of the Communist Party", cr: 2, type: "VinCore", pre: "None", desc: "Early origins to 1858. Ancient construction of Vietnamese history, Ly and Tran dynasties, Ming Occupation, Tay Son Rebellion. Forces shaping Vietnamese identity." },
+            "HASS1070": { name: "Cross-Cultural Navigation", cr: 2, type: "VinCore", pre: "None", desc: "Equips students with 'global experience' and intercultural sensitivity. How individual identities, values, biases are shaped by cultures." },
+            "HASS1100": { name: "Introduction to International Relations", cr: 2, type: "VinCore", pre: "None", desc: "Main actors, structures, processes of IR. Objectives of international organizations, collaboration. Assess alternative strategies for complex global scenarios." },
+            "ARTS1030": { name: "Art Appreciation and Application", cr: 2, type: "VinCore", pre: "None", desc: "Historical, philosophical, cultural contexts of visual arts. Elements, media, methods. Application of arts in business, tech. Vietnam arts in global context." },
+            "PERF1010": { name: "Artistic Performance and Application", cr: 2, type: "VinCore", pre: "None", desc: "Improve skill in chosen field (music, dance, theatre). Create and perform artistic pieces, stage presence, ethical considerations in performance." },
+            
+            "LAW1010": { name: "Introduction to Law", cr: 2, type: "VinCore", pre: "None", desc: "Nature of rule of law, morality, ethics. Legal theory, comparative legal analysis, international law, Vietnamese civil law (contract formation). Legal simulation / moot court." },
+            
+            "SCIENCE_CRS": { name: "Physical Science Elective", cr: 2, type: "Science Requirement", pre: "Varies", desc: "Students select at least 2 credits of Physical Science. Options include: CHEM2010 (Chemistry), BIOL1010 (Biology), PHYS2020 (Physics II)." },
+            
+            "COMP3080": { name: "Course-related Project I", cr: 1, type: "Project", pre: "Determined by instructor", desc: "Students work in multidisciplinary teams on a course-related problem guided by the course instructor. Applied in courses like AI, ML, OS, Cyber." },
+            "COMP3090": { name: "Course-related Project II", cr: 1, type: "Project", pre: "Determined by instructor", desc: "Continuation or second instance of a project based on a major CS course topic." },
+            
+            "COMP4870": { name: "Practice/Internship", cr: 0, type: "Capstone", pre: "Completed sophomore year", desc: "640 hours. Professional structured internship. Apply theoretical knowledge to a real-world work environment. Create SMART learning outcomes with an industry mentor." },
+            "COMP4890": { name: "Graduation Thesis / Capstone Design", cr: 6, type: "Capstone", pre: "Practice/Internship", desc: "Apply technical knowledge and skills to actual computing design. Multidisciplinary end-to-end solution to a complex real-world problem. Supervised by VinUni faculty. (Capstone I and II)." },
+            
+            "CONC_ELEC": { name: "Concentration Elective", cr: 3, type: "Elective Requirement", pre: "Varies", desc: "Select courses from tracks like Artificial Intelligence, Data Analytics, or Cybersecurity to build a 12-credit concentration block." },
+            "FREE_ELEC": { name: "Free Elective", cr: 3, type: "Elective Requirement", pre: "Varies", desc: "Courses chosen by the student from any offering to reach the required credit thresholds." }
+        };
+
+        // --- CURRICULUM FLOW (From PDF Page 12) ---
+        const curriculum = [
+            {
+                year: 1,
+                semesters: [
+                    { name: "Fall", credits: 16, items: ["MATH1010", "CECS1010", "COMP1010", "ENTR1022", "IDEA1010", "VCOR1012", "VCOR1021"] },
+                    { name: "Spring", credits: 18, items: ["MATH1020", "PHYS1010", "COMP1020", "LEAD1031", "THINK1010", "ENGL1030", "VCOR1021"] },
+                    { name: "Summer", credits: 7, items: ["HASS1010", "HASS1020", "HASS1030"] }
+                ]
+            },
+            {
+                year: 2,
+                semesters: [
+                    { name: "Fall", credits: 18, items: ["MATH2010", "SCIENCE_CRS", "MATH2020", "COMP2020", "COSL1010", "ARTS1030", "HASS1070"] },
+                    { name: "Spring", credits: 18, items: ["COMP3010", "COMP2050", "MATH4010", "MATH2050", "COMP3080", "ENGL1040"] }
+                ]
+            },
+            {
+                year: 3,
+                semesters: [
+                    { name: "Fall", credits: 17, items: ["COMP2040", "COMP2030", "COMP3020", "LAW1010", "HASS1041", "COMP3090"] },
+                    { name: "Spring", credits: 0, items: ["COMP4870"] }
+                ]
+            },
+            {
+                year: 4,
+                semesters: [
+                    { name: "Fall", credits: 13, items: ["HASS1050", "TECH1010", "CONC_ELEC", "FREE_ELEC", "COMP4890"] },
+                    { name: "Spring", credits: 13, items: ["CONC_ELEC", "CONC_ELEC", "FREE_ELEC", "COMP4890"] }
+                ]
+            }
+        ];
+
+        function renderCurriculum() {
+            const container = document.getElementById('curriculum-container');
+            container.innerHTML = '';
+
+            curriculum.forEach(yr => {
+                const yearDiv = document.createElement('div');
+                yearDiv.className = 'year-container';
+                
+                let semsHTML = '';
+                yr.semesters.forEach(sem => {
+                    let tasksHTML = '<ul class="course-list">';
+                    
+                    sem.items.forEach(code => {
+                        const course = courseDB[code] || { name: "Elective/Requirement", cr: "-", type: "Other" };
+                        const crDisplay = course.cr > 0 ? `${course.cr} Cr` : '0 Cr';
+
+                        tasksHTML += `
+                            <li class="course-item" onclick="openModal('${code}')">
+                                <div class="course-label">
+                                    <div class="course-header">
+                                        <span class="course-code">${code}</span>
+                                        <span class="time-tag">${crDisplay}</span> 
+                                    </div>
+                                    <span>${course.name}</span>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    tasksHTML += '</ul>';
+
+                    semsHTML += `
+                        <div class="glass day-card">
+                            <div class="day-title">
+                                <span>${sem.name} Semester</span>
+                            </div>
+                            <div class="day-subtitle">Target: ~${sem.credits} Credits</div>
+                            ${tasksHTML}
+                        </div>
+                    `;
+                });
+
+                yearDiv.innerHTML = `
+                    <div class="year-header">Year ${yr.year}</div>
+                    <div class="days-grid">${semsHTML}</div>
+                `;
+                container.appendChild(yearDiv);
+            });
+        }
+
+        // --- Tabs & Search ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            const btn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
+            if(btn) btn.classList.add('active');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const resultsContainer = document.getElementById('search-results-container');
+            
+            if (query.length < 2) {
+                if (document.getElementById('tab-search').classList.contains('active')) {
+                    switchTab('flow');
+                }
+                return;
+            }
+
+            switchTab('search');
+            resultsContainer.innerHTML = '';
+            
+            let found = 0;
+            for (let code in courseDB) {
+                const course = courseDB[code];
+                const searchableStr = `${code} ${course.name} ${course.desc} ${course.type}`.toLowerCase();
+                
+                if (searchableStr.includes(query)) {
+                    found++;
+                    resultsContainer.innerHTML += `
+                        <div class="glass search-item" onclick="openModal('${code}')">
+                            <h3 style="color: var(--text-main); margin-bottom: 8px;">${code}: ${course.name}</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+                                <span class="time-tag">${course.cr} Cr</span> | <span style="color:var(--accent-secondary);">${course.type}</span>
+                            </p>
+                            <p style="font-size: 0.95rem; color: var(--text-dark); line-height: 1.5;">${course.desc.substring(0, 180)}...</p>
+                        </div>
+                    `;
+                }
+            }
+
+            if(found === 0) {
+                resultsContainer.innerHTML = `<p style="color:var(--text-muted); padding: 1rem;">No courses found matching "${query}".</p>`;
+            }
+        }
+
+        // --- Modal System ---
+        function openModal(code) {
+            const course = courseDB[code];
+            if (!course) return;
+
+            document.getElementById('modal-code').innerText = code;
+            document.getElementById('modal-title').innerText = course.name;
+            
+            document.getElementById('modal-credit').innerText = course.cr > 0 ? `${course.cr} Credits` : 'Non-credit';
+            document.getElementById('modal-category').innerText = course.type;
+
+            document.getElementById('modal-prereq').innerText = course.pre;
+            document.getElementById('modal-desc').innerText = course.desc;
+
+            document.getElementById('course-modal').classList.add('show');
+        }
+
+        function closeModal(force = false) {
+            if (force === true || force.target.classList.contains('modal-overlay')) {
+                document.getElementById('course-modal').classList.remove('show');
+            }
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', renderCurriculum);
+    </script>
+</body>
+    </html>
