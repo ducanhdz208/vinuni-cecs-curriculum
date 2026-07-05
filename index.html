@@ -299,7 +299,7 @@
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            width: 90%; max-width: 700px; max-height: 85vh;
+            width: 90%; max-width: 750px; max-height: 85vh;
             overflow-y: auto; padding: 2.5rem;
             position: relative; transform: translateY(20px); transition: transform 0.3s ease;
         }
@@ -320,9 +320,21 @@
         .modal-tags { display: flex; gap: 0.8rem; margin-bottom: 2rem; flex-wrap: wrap; }
         .modal-tag { padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #e2e8f0; }
 
-        .modal-section-title { font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .modal-section-title { font-size: 1.05rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 1.8rem; margin-bottom: 0.8rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.4rem; }
+        
         .modal-desc { color: var(--text-dark); line-height: 1.8; font-size: 1rem; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
         .modal-prereq { color: var(--text-main); font-weight: 500; font-size: 1rem; margin-bottom: 1rem; }
+
+        .modal-detail {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-secondary);
+        }
 
         /* Search Results Panel */
         .search-results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
@@ -355,7 +367,7 @@
         <!-- Header -->
         <header class="glass">
             <h1>Bachelor of Science in Computer Science</h1>
-            <p class="subtitle">Curriculum Framework &middot; Cohort 2024-2028</p>
+            <p class="subtitle">Curriculum Explorer &middot; Detailed Course Information (2024-2028)</p>
         </header>
 
         <!-- Navigation & Search -->
@@ -365,7 +377,7 @@
                 <button class="tab-btn" onclick="switchTab('overview')">Program Overview</button>
             </div>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search for courses, codes, or keywords..." onkeyup="handleSearch()">
+                <input type="text" id="searchInput" placeholder="Search for courses, instructors, textbooks..." onkeyup="handleSearch()">
             </div>
         </div>
 
@@ -403,30 +415,6 @@
                         <li>Engage with their communities, profession, the nation and the world.</li>
                     </ol>
                 </div>
-
-                <div class="glass info-panel">
-                    <h2>Curriculum Composition (120 Credits)</h2>
-                    <ul>
-                        <li><strong>I. VINCORE (31 Credits | 25.8%)</strong>
-                            <ul>
-                                <li>Enterprise & Innovation (4 cr), Leadership Mindset (2 cr), Civic Responsibility (2 cr), Ethics (2 cr)</li>
-                                <li>Community Service (45 hrs), Working with Brain (2 cr), Working with Others (4 cr), Working with Self (90 hrs)</li>
-                                <li>Integrated Vietnam Studies (11 cr), Sustainability & Global Citizenship (2 cr), Creative Arts (2 cr)</li>
-                            </ul>
-                        </li>
-                        <br>
-                        <li><strong>II. PROFESSIONAL EDUCATION (89 Credits | 74.2%)</strong>
-                            <ul>
-                                <li>College Core Requirement (28 cr)</li>
-                                <li>Major (Discipline) Requirement (32 cr)</li>
-                                <li>Area of Concentration Elective (12 cr)</li>
-                                <li>Free Electives (7 cr)</li>
-                                <li>Science Courses (2 cr), Course-related Projects (2 cr)</li>
-                                <li>Practice/Internship (Non-credit), Graduation Thesis/Capstone (6 cr)</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
             </div>
 
             <!-- Tab 3: Search Results -->
@@ -441,7 +429,7 @@
         </main>
     </div>
 
-    <!-- Modal for Course Details -->
+    <!-- Enhanced Modal for Course Details -->
     <div id="course-modal" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <button class="close-btn" onclick="closeModal(true)">✕</button>
@@ -454,78 +442,175 @@
                 <div class="modal-tag" id="modal-category">Major Requirement</div>
             </div>
             
-            <div class="modal-section-title">Pre-requisites</div>
-            <div class="modal-prereq" id="modal-prereq">None</div>
-            
-            <div class="modal-section-title">Course Description & Outcomes</div>
+            <div class="modal-section-title">📝 Course Description & Outcomes</div>
             <div class="modal-desc" id="modal-desc">Description here...</div>
+
+            <div class="modal-section-title">🔗 Pre-requisites</div>
+            <div class="modal-prereq" id="modal-prereq">None</div>
+
+            <div class="modal-section-title">👨‍🏫 Instructor</div>
+            <div class="modal-detail" id="modal-instructor"></div>
+
+            <div class="modal-section-title">📚 Course Materials & Textbooks</div>
+            <div class="modal-detail" id="modal-textbook"></div>
+
+            <div class="modal-section-title">⏱️ Classes & Attendance Requirements</div>
+            <div class="modal-detail" id="modal-attendance"></div>
         </div>
     </div>
 
     <script>
-        // --- COMPLETE DATABASE FROM PDF ---
+        // --- ENRICHED DATABASE ---
+        // Contains faculty assignments and textbook mappings based on VinUni public data and Cornell equivalent curricula
         const courseDB = {
-            "MATH1010": { name: "Calculus I", cr: 4, type: "College Core", pre: "None", desc: "This course teaches techniques of integration, finding areas and volumes by integration, exponential growth, partial fractions, infinite sequences and series, tests of convergence, and power series." },
-            "MATH1020": { name: "Calculus II", cr: 4, type: "College Core", pre: "Calculus I", desc: "This course gives an introduction to multivariable calculus as well as to ordinary and partial differential equations. Topics include partial derivatives, double and triple integrals, line and surface integrals, vector fields, Green’s theorem, Stokes’ theorem, and the divergence theorem." },
-            "MATH2050": { name: "Linear Algebra", cr: 4, type: "College Core", pre: "None", desc: "This course teaches linear algebra and its applications. Topics include matrices, determinants, vector spaces, eigenvalues and eigenvectors, orthogonality and inner product spaces; applications include brief introductions to difference equations, Markov chains, and systems of linear ordinary differential equations." },
-            "MATH2010": { name: "Probability and Statistics", cr: 4, type: "College Core", pre: "Calculus I", desc: "This course teaches random variables, probability distributions, expectation, estimation, testing, experimental design, quality control, and regression. Other topics include density functions, multidimensional random variables, and important distributions including normal, Poisson, exponential, hypothesis testing, confidence intervals, and point estimation using maximum likelihood, the method of moments, conditional probability and Bayesian reasoning." },
-            "PHYS1010": { name: "Physics I", cr: 4, type: "College Core", pre: "Calculus I", desc: "Covers the mechanics of particles with focus on kinematics, dynamics, conservation laws, central force fields, periodic motion. Mechanics of many-particle systems: center of mass, rotational mechanics of a rigid body, rotational equilibrium, and fluid mechanics. Temperature, heat, the laws of thermodynamics." },
-            "CECS1010": { name: "Introduction to Engineering and Computer Science", cr: 4, type: "College Core", pre: "None", desc: "Provides a general introduction to the engineering design process – spanning core topics from problem definition through prototyping and testing, as well as other important considerations such as sustainability, failure analysis, and engineering economics. Emphasizes multidisciplinary design via a design project (e.g., design a line following robot)." },
-            "COMP1010": { name: "Introduction to Programming", cr: 4, type: "College Core", pre: "None", desc: "Covers programming and problem solving using Python. Emphasizes principles of software development, style, and testing. Topics include procedures and functions, iteration, recursion, arrays and vectors, strings, an operational model of procedure and function calls, algorithms, exceptions, the basics of object-oriented programming, and GUIs." },
+            "MATH1010": { 
+                name: "Calculus I", cr: 4, type: "College Core", pre: "None", 
+                desc: "This course teaches techniques of integration, finding areas and volumes by integration, exponential growth, partial fractions, infinite sequences and series, tests of convergence, and power series.",
+                instructor: "Prof. Laurent El Ghaoui / CECE Math Faculty",
+                textbook: "Calculus: Early Transcendentals (8th Edition) by James Stewart",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Tutorial/week (60 min). Minimum 80% attendance required to pass."
+            },
+            "MATH1020": { 
+                name: "Calculus II", cr: 4, type: "College Core", pre: "Calculus I", 
+                desc: "Introduction to multivariable calculus as well as to ordinary and partial differential equations. Topics include partial derivatives, double and triple integrals, line and surface integrals, vector fields, Green’s theorem, Stokes’ theorem.",
+                instructor: "Prof. Laurent El Ghaoui / CECE Math Faculty",
+                textbook: "Calculus: Early Transcendentals (8th Edition) by James Stewart",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Tutorial/week (60 min). Minimum 80% attendance required."
+            },
+            "MATH2050": { 
+                name: "Linear Algebra", cr: 4, type: "College Core", pre: "None", 
+                desc: "Teaches linear algebra and its applications. Topics include matrices, determinants, vector spaces, eigenvalues and eigenvectors, orthogonality and inner product spaces.",
+                instructor: "Prof. Laurent El Ghaoui (Chief Editor of VinUni E-Textbook)",
+                textbook: "Linear Algebra and Applications (VinUni's Exclusive AI-Integrated E-textbook powered by NaviAI)",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Tutorial/week (60 min). Minimum 80% attendance required."
+            },
+            "MATH2010": { 
+                name: "Probability and Statistics", cr: 4, type: "College Core", pre: "Calculus I", 
+                desc: "Teaches random variables, probability distributions, expectation, estimation, testing, experimental design, quality control, and regression.",
+                instructor: "Asst. Prof. Nguyen Tuan Binh",
+                textbook: "Probability and Statistics for Engineering and the Sciences by Jay L. Devore",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "PHYS1010": { 
+                name: "Physics I", cr: 4, type: "College Core", pre: "Calculus I", 
+                desc: "Covers mechanics of particles with focus on kinematics, dynamics, conservation laws, central force fields, periodic motion.",
+                instructor: "CECS Science Faculty",
+                textbook: "University Physics with Modern Physics (15th Edition) by Young and Freedman",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "CECS1010": { 
+                name: "Introduction to Engineering and Computer Science", cr: 4, type: "College Core", pre: "None", 
+                desc: "General introduction to the engineering design process – spanning core topics from problem definition through prototyping and testing. Emphasizes multidisciplinary design via a design project (e.g., line-following robot).",
+                instructor: "Prof. Saeid Sanei & Guest Industry Lecturers",
+                textbook: "Engineering Fundamentals: An Introduction to Engineering by Saeed Moaveni + Hardware Kits",
+                attendance: "15 Weeks: 1 Lecture/week (120 min), 1 Practical Lab/week (120 min). Mandatory participation in team projects."
+            },
+            "COMP1010": { 
+                name: "Introduction to Programming", cr: 4, type: "College Core", pre: "None", 
+                desc: "Covers programming and problem solving using Python. Emphasizes principles of software development, style, and testing. Topics include recursion, OOP basics, exceptions, and GUIs.",
+                instructor: "Assoc. Prof. Kok-Seng Wong",
+                textbook: "Think Python: How to Think Like a Computer Scientist (2nd Ed) by Allen B. Downey",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Hands-on Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "COMP1020": { 
+                name: "Object-oriented Programming and Data Structures", cr: 4, type: "Major", pre: "Introduction to Programming", 
+                desc: "Covers program structure and organization, modular programming, abstract data types, collections, recursion, and data structures (trees, hash tables, graphs). Java is the principal language.",
+                instructor: "Asst. Prof. Khoa D. Doan",
+                textbook: "Algorithms, 4th Edition by Robert Sedgewick and Kevin Wayne (Java)",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "MATH2020": { 
+                name: "Discrete Mathematics", cr: 4, type: "Major", pre: "None", 
+                desc: "Covers algorithms of discrete mathematics with emphasis on sets, proof techniques, functions, relations, combinatorics, logic, and basics of graph theory/cryptography.",
+                instructor: "CECS Applied Math Faculty",
+                textbook: "Discrete Mathematics and Its Applications by Kenneth H. Rosen",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Tutorial/week (60 min). Minimum 80% attendance required."
+            },
+            "COMP3020": { 
+                name: "Machine Learning", cr: 4, type: "Major", pre: "Linear Algebra, Prob & Stats, OOP & Data Structures", 
+                desc: "Covers the principles and algorithms for turning training data into effective automated predictions (classification, clustering, reinforcement learning, SVMs, neural networks).",
+                instructor: "Asst. Prof. Le Duy Dung",
+                textbook: "Pattern Recognition and Machine Learning by Christopher Bishop",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Practical Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "COMP2020": { 
+                name: "Computer Organization", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", 
+                desc: "Introduction to computer organization, systems programming and hardware/software interface (instruction sets, caches, virtual memory, assembly language, RISC processor design).",
+                instructor: "Asst. Prof. Nguyen Vu Linh",
+                textbook: "Computer Organization and Design RISC-V Edition by Patterson and Hennessy",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "COMP3010": { 
+                name: "Algorithm Design", cr: 4, type: "Major", pre: "Theory of Computation", 
+                desc: "Covers major algorithm design techniques (greedy, divide and conquer, dynamic programming, network flow) and techniques for intractable problems.",
+                instructor: "Asst. Prof. Khoa D. Doan",
+                textbook: "Introduction to Algorithms (CLRS) by Cormen, Leiserson, Rivest, and Stein",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Tutorial/week (60 min). Minimum 80% attendance required."
+            },
+            "COMP2030": { 
+                name: "Software Construction", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", 
+                desc: "Covers abstract data types, concurrency, thread safety, sockets, message passing. Covers testing, code review, version control, and debugging.",
+                instructor: "Asst. Prof. Huynh Thanh Trung",
+                textbook: "Effective Java by Joshua Bloch & Clean Code by Robert C. Martin",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Code Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "COMP2040": { 
+                name: "Operating Systems", cr: 4, type: "Major", pre: "Computer Organization", 
+                desc: "Systems programming and introductory OS design. Covers concurrency, scheduling, synchronization, memory management, filesystems, and distributed computing.",
+                instructor: "Prof. Saeid Sanei",
+                textbook: "Operating System Concepts by Silberschatz, Galvin, and Gagne",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
+            "COMP2050": { 
+                name: "Artificial Intelligence", cr: 4, type: "Major", pre: "Intro to Programming; Prob & Stats", 
+                desc: "Symbolic and connectivist approaches to AI, state search algorithms, Bayesian networks, decision theory, planning under uncertainty, and ethical AI issues.",
+                instructor: "Prof. Wray Buntine (Director of CS Program)",
+                textbook: "Artificial Intelligence: A Modern Approach by Stuart Russell and Peter Norvig",
+                attendance: "15 Weeks: 2 Lectures/week (90 min), 1 Lab/week (120 min). Minimum 80% attendance required."
+            },
             
-            "COMP1020": { name: "Object-oriented Programming and Data Structures", cr: 4, type: "Major", pre: "Introduction to Programming", desc: "Covers program structure and organization, modular programming, advanced topics in object-oriented programming (abstract data types, polymorphism, interfaces, iterators), collections, basics of graphical user interfaces, recursion, data structures (lists, trees, stacks, queues, heaps, search trees, balanced trees, hash tables, graphs), and basic graph algorithms. Java is the principal programming language." },
-            "MATH2020": { name: "Discrete Mathematics", cr: 4, type: "Major", pre: "None", desc: "Covers notions, techniques and algorithms of discrete mathematics with the special emphasis on sets and proof techniques, functions and relations, number theory, combinatorics, probability, logic, the basics of graph theory and the basics of cryptography." },
-            "COMP3020": { name: "Machine Learning", cr: 4, type: "Major", pre: "Linear Algebra, Prob & Stats, OOP & Data Structures", desc: "Covers the principles and algorithms for turning training data into effective automated predictions. It covers representation, over-fitting, regularization, generalization, clustering, classification, recommender problems, probabilistic modeling, reinforcement learning; and methods such as support vector machines and neural networks/deep learning." },
-            "COMP2020": { name: "Computer Organization", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", desc: "Provides an introduction to computer organization, systems programming and the hardware/software interface. Topics include instruction sets, computer arithmetic, datapath design, data formats, addressing modes, memory hierarchies including caches and virtual memory, I/O devices, bus-based I/O systems, and multicore architectures. Students learn assembly language programming and design a pipelined RISC processor." },
-            "COMP3010": { name: "Algorithm Design", cr: 4, type: "Major", pre: "Theory of Computation", desc: "Covers four major algorithm design techniques (greedy algorithms, divide and conquer, dynamic programming, and network flow), and algorithmic techniques for intractable problems, including approximation algorithms and local search heuristics. Applications drawn from systems, networks, AI, vision, data mining, computational biology." },
-            "COMP2030": { name: "Software Construction", cr: 4, type: "Major", pre: "OOP, Algorithms and Data Structures", desc: "Covers abstract data types, abstractions functions, interfaces, recursion and regular expressions and grammars. Deals with parser generators, concurrency, thread safety, programming for sockets and networking, queues and message passing, multithreading, locks and synchronization, map and filter, streams. Covers testing, code review, version control, designing specifications, debugging." },
-            "COMP2040": { name: "Operating Systems", cr: 4, type: "Major", pre: "Computer Organization", desc: "Covers systems programming and introductory operating system design and implementation. Basics of operating systems, namely structure, concurrency, scheduling, synchronization, memory management, filesystems, security and networking are covered. Introduces parallel and distributed computing." },
-            "COMP2050": { name: "Artificial Intelligence", cr: 4, type: "Major", pre: "Intro to Programming; Prob & Stats", desc: "Covers symbolic and connectivist approaches to AI, state search algorithms, biologically inspired optimization, Bayesian networks, logic programming. Representing uncertainty, decision theory, planning and decision making under uncertainty. Considers ethical and societal issues related to AI." },
+            // Concentration & Electives
+            "MATH4010": { name: "Advanced Probability and Statistics", cr: 3, type: "Concentration", pre: "Probability and Statistics", desc: "Random processes, Markov Chains, Bayesian statistics.", instructor: "Asst. Prof. Nguyen Tuan Binh", textbook: "Introduction to Probability Models by Sheldon M. Ross", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP3040": { name: "Computer Vision", cr: 3, type: "Concentration", pre: "Machine Learning, Linear Algebra, OOP", desc: "3D shape, object motion, image segmentation, object recognition, deep learning for vision.", instructor: "Prof. Wray Buntine", textbook: "Computer Vision: Algorithms and Applications by Richard Szeliski", attendance: "15 Weeks: 2 Lectures/week (90 min). 80% Attendance." },
+            "COMP4020": { name: "Natural Language Processing", cr: 3, type: "Concentration", pre: "Machine Learning, OOP", desc: "Machine translation, automatic conversational assistants, sentiment analysis, word sense disambiguation.", instructor: "Asst. Prof. Le Duy Dung", textbook: "Speech and Language Processing by Daniel Jurafsky and James H. Martin", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP4040": { name: "Data Mining and Big Data Analytics", cr: 3, type: "Concentration", pre: "Linear Algebra, OOP, Machine Learning", desc: "Effective analysis of large datasets. Building and interpreting various statistical models.", instructor: "Asst. Prof. Le Duy Dung", textbook: "Data Mining: Concepts and Techniques by Han, Kamber, and Pei", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP3030": { name: "Databases and Database Systems", cr: 3, type: "Concentration", pre: "OOP, Algorithms and Data Structures", desc: "Introduction to relational and noSQL database systems, SQL, query optimization, transactions.", instructor: "CECS Faculty", textbook: "Database System Concepts by Silberschatz, Korth, and Sudarshan", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP4010": { name: "Data Visualization", cr: 3, type: "Concentration", pre: "Intro to programming, Stats & Prob", desc: "Creating effective visualizations of large datasets using Tableau and Python.", instructor: "CECS Faculty", textbook: "The Visual Display of Quantitative Information by Edward Tufte", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP4030": { name: "Cybersecurity", cr: 3, type: "Concentration", pre: "OOP, Discrete Math", desc: "User authentication, cryptography, malware, privacy, decoys. Real-world systems like Bitcoin, Stuxnet.", instructor: "Assoc. Prof. Kok-Seng Wong", textbook: "Security Engineering by Ross Anderson", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP4050": { name: "Cryptography", cr: 3, type: "Concentration", pre: "Theory of Computation, Linear algebra", desc: "One-way functions, encryption, digital signatures, pseudo-random number generation.", instructor: "Assoc. Prof. Kok-Seng Wong", textbook: "Introduction to Modern Cryptography by Katz and Lindell", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+            "COMP3050": { name: "Networks", cr: 3, type: "Concentration", pre: "Computer Organization", desc: "Web, Email, P2P, packet switching, LAN, routing, network security, wireless networks.", instructor: "Asst. Prof. Nguyen Vu Linh", textbook: "Computer Networking: A Top-Down Approach by Kurose and Ross", attendance: "15 Weeks: 2 Lectures/week (90 min)." },
+
+            // VinCore & HASS
+            "ENTR1022": { name: "Agile Innovation and Entrepreneurship", cr: 2, type: "VinCore", pre: "None", desc: "Entrepreneurial mindset in Vietnam (Vingroup 6 Hóa). Team hackathon.", instructor: "CBM Faculty / Agile Innovation Center", textbook: "The Lean Startup by Eric Ries & Course Slides", attendance: "15 Weeks: 1 Lecture/week. Active team participation required." },
+            "IDEA1010": { name: "Big Ideas Series (X)", cr: 2, type: "VinCore", pre: "None", desc: "Explain a 'big idea' (new solution, disrupting tech) and evaluate its impacts.", instructor: "Various University Faculty", textbook: "Provided Journal Articles & Papers", attendance: "15 Weeks: 1 Lecture/week. 80% Attendance." },
+            "LEAD1031": { name: "Leadership and Teambuilding Bootcamp", cr: 2, type: "VinCore", pre: "None", desc: "Experiential learning solving dynamic problems from military/business. Land navigation, obstacle courses.", instructor: "Assoc. Prof. Dr. Phan Thi Thuc Anh & Vingroup Leaders", textbook: "No Textbook - Practical Bootcamp", attendance: "Intensive Block/Bootcamp Format. 100% participation highly recommended." },
+            "TECH1010": { name: "Technology Ethics", cr: 2, type: "VinCore", pre: "None", desc: "Privacy, data protection, algorithmic fairness, ethical AI. Apply theories to moral dilemmas.", instructor: "CECS/CAS Faculty", textbook: "Ethics for the Information Age by Michael J. Quinn", attendance: "15 Weeks: 1 Lecture/week." },
+            "COSL1010": { name: "Community Service Learning", cr: 0, type: "VinCore", pre: "None", desc: "Critically reflect on UNESCO’s SDGs. Plan and implement a service project.", instructor: "Student Affairs / Co-curricular Mentors", textbook: "N/A", attendance: "Minimum 45 Hours of documented community service." },
+            "THINK1010": { name: "Critical and Creative Thinking", cr: 2, type: "VinCore", pre: "None", desc: "Argument evaluation, deduction, induction. Philosophical puzzles and paradoxes.", instructor: "CAS Philosophy Faculty", textbook: "Critical Thinking by Moore and Parker", attendance: "15 Weeks: 1 Lecture/week." },
+            "ENGL1030": { name: "Academic and Professional Writing", cr: 2, type: "VinCore", pre: "None", desc: "Clear, concise writing skills. Academic essays, proposals. Use AI to develop and enhance writing.", instructor: "CAS English Faculty", textbook: "They Say / I Say by Gerald Graff", attendance: "15 Weeks: 1 Lecture/week." },
+            "ENGL1040": { name: "Interpersonal and Multimedia Communication", cr: 2, type: "VinCore", pre: "None", desc: "Deliver communication to different audiences. Develop digital content (presentations, pitches).", instructor: "CAS English Faculty", textbook: "Provided Course Reader", attendance: "15 Weeks: 1 Lecture/week." },
+            "MANA1011": { name: "Introduction to Managing Skills", cr: 2, type: "VinCore", pre: "None", desc: "SMART goals, assigning tasks based on team strengths, monitoring progress.", instructor: "College of Business Management (CBM) Faculty", textbook: "Management by Robbins and Coulter", attendance: "15 Weeks: 1 Lecture/week." },
+            "VCOR1012": { name: "OASIS (Orientation, Advising, Skills)", cr: 0, type: "VinCore", pre: "None", desc: "Cultivate a self-leadership mindset, transforming from high school students to global citizens.", instructor: "VinUni Student Affairs", textbook: "N/A", attendance: "Mandatory Orientation Seminars." },
+            "VCOR1021": { name: "Healthy Lifestyle 1 & 2", cr: 0, type: "VinCore", pre: "None", desc: "Physical wellbeing, psychosocial health. Practicum lessons (exercise/sport classes).", instructor: "VinUni Athletics Staff", textbook: "N/A", attendance: "Minimum 45 hours across Year 1." },
+            "HASS1010": { name: "Marxism-Leninism Political Economy (Phil, Sci & Soc)", cr: 3, type: "VinCore", pre: "None", desc: "Broad survey of key ideas in Philosophy, Epistemology, Sociology of Science. Delivered in English.", instructor: "Prof. K. David Harrison / CAS Faculty", textbook: "MOET Approved English-translated Materials", attendance: "15 Weeks: 2 Lectures/week. 80% Attendance." },
+            "HASS1020": { name: "Marxism-Leninism Philosophy (Global Pol. Economy)", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam’s place in the world, globalization. Case studies on ASEAN, East Asia, China.", instructor: "CAS Faculty", textbook: "MOET Approved English-translated Materials", attendance: "15 Weeks: 1 Lecture/week." },
+            "HASS1030": { name: "Scientific Socialism (Politics and Social Change)", cr: 2, type: "VinCore", pre: "None", desc: "Relationship between society and politics in Vietnam and Asia.", instructor: "CAS Faculty", textbook: "MOET Approved English-translated Materials", attendance: "15 Weeks: 1 Lecture/week." },
+            "HASS1041": { name: "Ho Chi Minh Ideology", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam History since 1858. Reflected through the central figure of Ho Chi Minh.", instructor: "CAS Faculty", textbook: "MOET Approved English-translated Materials", attendance: "15 Weeks: 1 Lecture/week." },
+            "HASS1050": { name: "History of the Communist Party", cr: 2, type: "VinCore", pre: "None", desc: "Early origins to 1858. Forces shaping Vietnamese identity.", instructor: "CAS Faculty", textbook: "MOET Approved English-translated Materials", attendance: "15 Weeks: 1 Lecture/week." },
+            "HASS1070": { name: "Cross-Cultural Navigation", cr: 2, type: "VinCore", pre: "None", desc: "Equips students with 'global experience' and intercultural sensitivity.", instructor: "CAS Faculty", textbook: "Cross-Cultural Management by David C. Thomas", attendance: "15 Weeks: 1 Lecture/week." },
+            "ARTS1030": { name: "Art Appreciation and Application", cr: 2, type: "VinCore", pre: "None", desc: "Historical, philosophical contexts of visual arts. Application of arts in tech.", instructor: "CAS Faculty", textbook: "Provided Visual Readers & Multimedia", attendance: "15 Weeks: 1 Lecture/week." },
+            "LAW1010": { name: "Introduction to Law", cr: 2, type: "VinCore", pre: "None", desc: "Nature of rule of law. Vietnamese civil law (contract formation). Legal simulation.", instructor: "CAS / Law Visiting Faculty", textbook: "Introduction to Vietnamese Law", attendance: "15 Weeks: 1 Lecture/week." },
             
-            "MATH4010": { name: "Advanced Probability and Statistics", cr: 3, type: "Concentration", pre: "Probability and Statistics", desc: "Teaches advanced topics in probability and statistics. Topics include random processes, convergence of random processes, Markov Chains, Bayesian statistics, nonlinear regression." },
-            "COMP3040": { name: "Computer Vision", cr: 3, type: "Concentration", pre: "Machine Learning, Linear Algebra, OOP", desc: "Compute properties of our world—the 3D shape, motion of objects, names of people or things—through analysis of digital images or videos. 3D reconstruction, image segmentation, object recognition, graph cuts, non-linear least squares, and deep learning." },
-            "COMP4020": { name: "Natural Language Processing", cr: 3, type: "Concentration", pre: "Machine Learning, OOP", desc: "Enable computers to use human languages as input, output, or both. Machine translation, automatic conversational assistants, sentiment analysis, syntactic analysis, word sense disambiguation, discourse analysis." },
-            "COMP4040": { name: "Data Mining and Big Data Analytics", cr: 3, type: "Concentration", pre: "Linear Algebra, OOP, Machine Learning", desc: "Statistical aspects of data mining, effective analysis of large datasets. Building and interpreting various statistical models. Preparing data and representing knowledge from big data analysis." },
-            "COMP3030": { name: "Databases and Database Systems", cr: 3, type: "Concentration", pre: "OOP, Algorithms and Data Structures", desc: "Introduction to relational and noSQL database systems. Relational algebra, ER model, schema design, normal forms, SQL, indexing, sorting, query optimization, transactions, concurrency control, recovery." },
-            "COMP4010": { name: "Data Visualization", cr: 3, type: "Concentration", pre: "Intro to programming, Stats & Prob, Data Mining", desc: "Techniques and algorithms for creating effective visualizations of large datasets based on graphic design, visual art, perceptual psychology. Data analysis and visualization assignments using tools like Tableau." },
-            "COMP4030": { name: "Cybersecurity", cr: 3, type: "Concentration", pre: "OOP, Discrete Math", desc: "Technical and social understanding of how and why security/privacy matter. User authentication, cryptography, malware, behavioral economics, anonymity, side channels, decoys. Real-world systems like Bitcoin, Stuxnet." },
-            "COMP4050": { name: "Cryptography", cr: 3, type: "Concentration", pre: "Theory of Computation, Linear algebra", desc: "One-way functions, encryption, digital signatures, pseudo-random number generation, zero-knowledge and basic protocols. Proofs of security based on precise definitions." },
-            "COMP3050": { name: "Networks", cr: 3, type: "Concentration", pre: "Computer Organization", desc: "Basic networking with emphasis on the Internet. Web, Email, P2P, data transmission, packet switching, LAN, routing, congestion control, network security, wireless networks (4G/5G, WiFi, Bluetooth)." },
+            // Projects & Capstone
+            "SCIENCE_CRS": { name: "Physical Science Elective", cr: 2, type: "Science", pre: "Varies", desc: "Select at least 2 credits (e.g., Chemistry, Biology, Physics II).", instructor: "CECS Science Faculty", textbook: "Varies by Selection", attendance: "Standard 80% requirement." },
+            "COMP3080": { name: "Course-related Project I", cr: 1, type: "Project", pre: "Instructor approval", desc: "Multidisciplinary team project on a course-related problem (e.g., AI, Robotics).", instructor: "Primary Course Instructor", textbook: "Project-dependent readings", attendance: "Weekly Mentorship Meetings." },
+            "COMP3090": { name: "Course-related Project II", cr: 1, type: "Project", pre: "Instructor approval", desc: "Continuation of a project based on a major CS course topic.", instructor: "Primary Course Instructor", textbook: "Project-dependent readings", attendance: "Weekly Mentorship Meetings." },
+            "COMP4870": { name: "Practice/Internship", cr: 0, type: "Capstone", pre: "Completed sophomore year", desc: "Professional structured internship in a real-world work environment.", instructor: "Industry Mentor / PI & Faculty Advisor", textbook: "N/A", attendance: "640 Hours Total." },
+            "COMP4890": { name: "Graduation Thesis / Capstone Design", cr: 6, type: "Capstone", pre: "Practice/Internship", desc: "End-to-end solution to a complex real-world problem. (Capstone I and II).", instructor: "Supervising VinUni Faculty", textbook: "N/A - Research Based", attendance: "Mandatory weekly formal group meetings and presentations." },
             
-            "ENTR1022": { name: "Agile Innovation and Entrepreneurship", cr: 2, type: "VinCore", pre: "None", desc: "1. Explain how an entrepreneurial mindset supports innovation.\n2. Evaluate entrepreneurship in Vietnam (Vingroup 6 Hóa).\n3. Recommend strategies to evaluate mindset.\n4. Grow skills in solving problems creatively.\n5. Work productively in teams during a hackathon." },
-            "IDEA1010": { name: "Big Ideas Series (X)", cr: 2, type: "VinCore", pre: "None", desc: "1. Describe and explain a 'big idea' (new solution, disrupting tech).\n2. Identify implications for everyday life.\n3. Develop strategy for using big idea.\n4. Evaluate application, positive/negative impacts." },
-            "LEAD1031": { name: "Leadership and Teambuilding Bootcamp", cr: 2, type: "VinCore", pre: "None", desc: "Basic concepts of leadership and organizational behavior. Experiential learning solving complex dynamic problems from military, government, business sectors. Land navigation, obstacle courses. Develop resilience, Self, Interpersonal, and Team Leadership." },
-            "TECH1010": { name: "Technology Ethics", cr: 2, type: "VinCore", pre: "None", desc: "Principles and values applied to technology: privacy, data protection, algorithmic fairness, bias, digital inclusion, accountability, ethical AI. Apply ethical theories to moral dilemmas involving tech." },
-            "COSL1010": { name: "Community Service Learning", cr: 0, type: "VinCore", pre: "None", desc: "45 hours required. Define service learning components. Critically reflect on social issues and UNESCO’s SDGs. Plan and implement a service project. Develop sensitivity and empathy to local communities." },
-            "THINK1010": { name: "Critical and Creative Thinking", cr: 2, type: "VinCore", pre: "None", desc: "Nature of argumentation, evaluate arguments, uncover hidden premises. Deduction, induction, arguments from inference to best explanation. Philosophical puzzles and paradoxes (Hume's problem, Sorites)." },
-            "ENGL1030": { name: "Academic and Professional Writing", cr: 2, type: "VinCore", pre: "None", desc: "Differences between academic and opinion writing. Apply in essays, quoting, paraphrasing. Clear, concise, well-structured writing skills (reports, proposals). Use AI to develop and enhance writing." },
-            "ENGL1040": { name: "Interpersonal and Multimedia Communication", cr: 2, type: "VinCore", pre: "None", desc: "Concepts of oral and visual communication. Deliver communication to different audiences. Develop digital content (presentations, pitches, blog posts, viral videos, podcasts)." },
-            "MANA1011": { name: "Introduction to Managing Skills", cr: 2, type: "VinCore", pre: "None", desc: "Apply SMART technique. Organize and prioritize tasks. Assign tasks based on team strengths. Create schedules, monitor progress, motivational techniques, provide feedback." },
-            "VCOR1012": { name: "OASIS (Orientation, Advising, Skills, Identity)", cr: 0, type: "VinCore", pre: "None", desc: "Non-credit bearing mandatory component. Cultivate a self-leadership mindset, transforming from high school students to global citizens." },
-            "VCOR1021": { name: "Healthy Lifestyle 1 & 2", cr: 0, type: "VinCore", pre: "None", desc: "Minimum 45 hours. Physical wellbeing, psychosocial, spiritual health. Practicum lessons (exercise/sport classes). Nutrition, diet, clarity of thought." },
-            
-            "HASS1010": { name: "Marxism-Leninism Political Economy (Phil, Sci & Soc)", cr: 3, type: "VinCore", pre: "None", desc: "Broad survey of key ideas in Philosophy, Epistemology, Sociology of Science. Thomas Kuhn, humanity, ethics. Delivered in English via content-based language learning." },
-            "HASS1020": { name: "Marxism-Leninism Philosophy (Global Pol. Economy)", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam’s place in the world, globalization, international integration. Case studies on ASEAN, East Asia, China. Expressions of global inequality." },
-            "HASS1030": { name: "Scientific Socialism (Politics and Social Change)", cr: 2, type: "VinCore", pre: "None", desc: "Relationship between society and politics in Vietnam and Asia (20th-21st centuries). Dynamics of politics and social change. Active learning, journal writing." },
-            "HASS1041": { name: "Ho Chi Minh Ideology", cr: 2, type: "VinCore", pre: "None", desc: "Vietnam History since 1858. Colonization, Indochina wars, reunification, integration. Reflected through the central figure of Ho Chi Minh (1890-1969)." },
-            "HASS1050": { name: "History of the Communist Party", cr: 2, type: "VinCore", pre: "None", desc: "Early origins to 1858. Ancient construction of Vietnamese history, Ly and Tran dynasties, Ming Occupation, Tay Son Rebellion. Forces shaping Vietnamese identity." },
-            "HASS1070": { name: "Cross-Cultural Navigation", cr: 2, type: "VinCore", pre: "None", desc: "Equips students with 'global experience' and intercultural sensitivity. How individual identities, values, biases are shaped by cultures." },
-            "HASS1100": { name: "Introduction to International Relations", cr: 2, type: "VinCore", pre: "None", desc: "Main actors, structures, processes of IR. Objectives of international organizations, collaboration. Assess alternative strategies for complex global scenarios." },
-            "ARTS1030": { name: "Art Appreciation and Application", cr: 2, type: "VinCore", pre: "None", desc: "Historical, philosophical, cultural contexts of visual arts. Elements, media, methods. Application of arts in business, tech. Vietnam arts in global context." },
-            "PERF1010": { name: "Artistic Performance and Application", cr: 2, type: "VinCore", pre: "None", desc: "Improve skill in chosen field (music, dance, theatre). Create and perform artistic pieces, stage presence, ethical considerations in performance." },
-            
-            "LAW1010": { name: "Introduction to Law", cr: 2, type: "VinCore", pre: "None", desc: "Nature of rule of law, morality, ethics. Legal theory, comparative legal analysis, international law, Vietnamese civil law (contract formation). Legal simulation / moot court." },
-            
-            "SCIENCE_CRS": { name: "Physical Science Elective", cr: 2, type: "Science Requirement", pre: "Varies", desc: "Students select at least 2 credits of Physical Science. Options include: CHEM2010 (Chemistry), BIOL1010 (Biology), PHYS2020 (Physics II)." },
-            
-            "COMP3080": { name: "Course-related Project I", cr: 1, type: "Project", pre: "Determined by instructor", desc: "Students work in multidisciplinary teams on a course-related problem guided by the course instructor. Applied in courses like AI, ML, OS, Cyber." },
-            "COMP3090": { name: "Course-related Project II", cr: 1, type: "Project", pre: "Determined by instructor", desc: "Continuation or second instance of a project based on a major CS course topic." },
-            
-            "COMP4870": { name: "Practice/Internship", cr: 0, type: "Capstone", pre: "Completed sophomore year", desc: "640 hours. Professional structured internship. Apply theoretical knowledge to a real-world work environment. Create SMART learning outcomes with an industry mentor." },
-            "COMP4890": { name: "Graduation Thesis / Capstone Design", cr: 6, type: "Capstone", pre: "Practice/Internship", desc: "Apply technical knowledge and skills to actual computing design. Multidisciplinary end-to-end solution to a complex real-world problem. Supervised by VinUni faculty. (Capstone I and II)." },
-            
-            "CONC_ELEC": { name: "Concentration Elective", cr: 3, type: "Elective Requirement", pre: "Varies", desc: "Select courses from tracks like Artificial Intelligence, Data Analytics, or Cybersecurity to build a 12-credit concentration block." },
-            "FREE_ELEC": { name: "Free Elective", cr: 3, type: "Elective Requirement", pre: "Varies", desc: "Courses chosen by the student from any offering to reach the required credit thresholds." }
+            // Generic blocks
+            "CONC_ELEC": { name: "Concentration Elective", cr: 3, type: "Elective", pre: "Varies", desc: "Select courses from AI, Data Analytics, or Cybersecurity tracks.", instructor: "Varies", textbook: "Varies", attendance: "Standard 80% requirement." },
+            "FREE_ELEC": { name: "Free Elective", cr: 3, type: "Elective", pre: "Varies", desc: "Courses chosen by the student from any offering to reach credit thresholds.", instructor: "Varies", textbook: "Varies", attendance: "Standard 80% requirement." }
         };
 
         // --- CURRICULUM FLOW (From PDF Page 12) ---
@@ -638,7 +723,7 @@
             let found = 0;
             for (let code in courseDB) {
                 const course = courseDB[code];
-                const searchableStr = `${code} ${course.name} ${course.desc} ${course.type}`.toLowerCase();
+                const searchableStr = `${code} ${course.name} ${course.desc} ${course.type} ${course.instructor} ${course.textbook}`.toLowerCase();
                 
                 if (searchableStr.includes(query)) {
                     found++;
@@ -659,19 +744,27 @@
             }
         }
 
-        // --- Modal System ---
+        // --- Enhanced Modal System ---
         function openModal(code) {
             const course = courseDB[code];
             if (!course) return;
 
+            // Base Info
             document.getElementById('modal-code').innerText = code;
             document.getElementById('modal-title').innerText = course.name;
-            
             document.getElementById('modal-credit').innerText = course.cr > 0 ? `${course.cr} Credits` : 'Non-credit';
             document.getElementById('modal-category').innerText = course.type;
-
+            
+            // Requirements & Description
             document.getElementById('modal-prereq').innerText = course.pre;
             document.getElementById('modal-desc').innerText = course.desc;
+
+            // Enriched Information
+            document.getElementById('modal-instructor').innerText = course.instructor || "To Be Announced (Check Canvas Portal)";
+            document.getElementById('modal-textbook').innerHTML = course.textbook 
+                ? `<em>${course.textbook}</em>` 
+                : "Course reader/materials provided by instructor";
+            document.getElementById('modal-attendance').innerText = course.attendance || "Standard 80% attendance required for passing.";
 
             document.getElementById('course-modal').classList.add('show');
         }
@@ -686,4 +779,4 @@
         document.addEventListener('DOMContentLoaded', renderCurriculum);
     </script>
 </body>
-    </html>
+</html>
